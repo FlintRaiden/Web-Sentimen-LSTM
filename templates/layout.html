@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}SentimenWatch — Analisis Opini Publik{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+<!-- ══════════════ TOPBAR ══════════════ -->
+<div class="topbar">
+  <span>🇮🇩 Proyek Akademik — Tidak Berafiliasi dengan Pemerintah</span>
+  <span id="clock"></span>
+</div>
+
+<!-- ══════════════ HEADER / NAVBAR ══════════════ -->
+<header class="navbar">
+  <div class="navbar-inner container">
+    <div class="brand">
+      <span class="brand-icon">📡</span>
+      <div>
+        <span class="brand-title">SentimenWatch</span>
+        <span class="brand-sub">Analisis Opini Publik · Indonesia</span>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#dashboard" class="nav-link">Dashboard</a>
+      <a href="#visualisasi" class="nav-link">Visualisasi</a>
+      <a href="#prediksi" class="nav-link nav-cta">🔍 Prediksi Real-time</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════ BREAKING NEWS TICKER ══════════════ -->
+<div class="ticker-wrap">
+  <div class="ticker-label">BREAKING</div>
+  <div class="ticker-content">
+    <span>Analisis 11.273 komentar publik dari YouTube &nbsp;•&nbsp;
+          85.3% sentimen masyarakat bersifat NEGATIF terhadap isu akses udara militer AS &nbsp;•&nbsp;
+          Model LSTM Bidirectional dengan akurasi validasi 68% &nbsp;•&nbsp;
+          Kata dominan negatif: "indonesia", "negara", "rakyat", "antek", "jajah" &nbsp;•&nbsp;
+          Data dikumpulkan dari 10 konten media sosial publik &nbsp;•&nbsp;
+    </span>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN CONTENT ══════════════ -->
+<main class="container main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ══════════════ FOOTER / DISCLAIMER ══════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>📡 SentimenWatch</h4>
+        <p>Platform analisis sentimen berbasis deep learning untuk memahami opini publik Indonesia terhadap isu geopolitik.</p>
+      </div>
+      <div class="footer-col">
+        <h4>📊 Statistik Dataset</h4>
+        <ul>
+          <li>Total komentar: 11.273</li>
+          <li>Platform: YouTube</li>
+          <li>Model: Bidirectional LSTM</li>
+          <li>Kelas: Positif / Negatif / Netral</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>⚠️ Disclaimer Akademik</h4>
+        <p>Website ini merupakan <strong>Proyek Akademik Mahasiswa</strong> dan <strong>bukan situs resmi pemerintah, lembaga negara, atau institusi apapun</strong>. Seluruh analisis bersifat ilmiah dan tidak mewakili pandangan politik tertentu. Data bersumber dari komentar publik di media sosial.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 — Tugas Kuliah Analisis Sentimen · Dibuat dengan Flask &amp; TensorFlow/Keras</p>
+      <p class="footer-note">🎓 Proyek ini tidak berafiliasi dengan pemerintah Republik Indonesia maupun pihak asing manapun.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Clock di topbar
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleDateString('id-ID', {weekday:'short', year:'numeric', month:'short', day:'numeric'}) +
+      ' · ' + now.toLocaleTimeString('id-ID');
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

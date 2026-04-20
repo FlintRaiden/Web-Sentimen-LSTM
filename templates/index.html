@@ -1,0 +1,507 @@
+{% extends "layout.html" %}
+
+{% block title %}SentimenWatch — Isu Akses Udara Militer AS di Indonesia{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════ HERO SECTION ══════════════ -->
+<section class="hero">
+  <div class="hero-badge">PENELITIAN AKADEMIK</div>
+  <h1 class="hero-title">
+    Analisis Sentimen Masyarakat Indonesia<br/>
+    <span class="hero-highlight">Terhadap Isu Proposal Akses Udara Militer Amerika</span>
+  </h1>
+  <p class="hero-desc">
+    Menggunakan <strong>Bidirectional LSTM</strong> dengan <strong>11.273 komentar</strong>
+    dari YouTube  untuk memahami persepsi publik terhadap isu geopolitik sensitif.
+  </p>
+  <div class="hero-actions">
+    <a href="#prediksi" class="btn btn-primary">🔍 Coba Prediksi Real-time</a>
+    <a href="#visualisasi" class="btn btn-outline">📊 Lihat Visualisasi</a>
+  </div>
+</section>
+
+<!-- ══════════════ STATISTIK CARDS ══════════════ -->
+<section id="dashboard" class="section">
+  <div class="section-header">
+    <h2>📊 Dashboard Statistik</h2>
+    <p>Ringkasan hasil analisis sentimen 11.273 komentar publik</p>
+  </div>
+
+  {% if stats %}
+  <div class="stats-grid">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">💬</div>
+      <div class="stat-num">{{ "{:,}".format(stats.total) }}</div>
+      <div class="stat-label">Total Komentar</div>
+    </div>
+    <div class="stat-card stat-neg">
+      <div class="stat-icon">😡</div>
+      <div class="stat-num">{{ "{:,}".format(stats.label_counts.get('Negatif', 0)) }}</div>
+      <div class="stat-label">Sentimen Negatif</div>
+      <div class="stat-pct">
+        {{ "%.1f"|format(stats.label_counts.get('Negatif',0) / stats.total * 100) }}%
+      </div>
+    </div>
+    <div class="stat-card stat-pos">
+      <div class="stat-icon">😊</div>
+      <div class="stat-num">{{ "{:,}".format(stats.label_counts.get('Positif', 0)) }}</div>
+      <div class="stat-label">Sentimen Positif</div>
+      <div class="stat-pct">
+        {{ "%.1f"|format(stats.label_counts.get('Positif',0) / stats.total * 100) }}%
+      </div>
+    </div>
+    <div class="stat-card stat-neu">
+      <div class="stat-icon">😐</div>
+      <div class="stat-num">{{ "{:,}".format(stats.label_counts.get('Netral', 0)) }}</div>
+      <div class="stat-label">Sentimen Netral</div>
+      <div class="stat-pct">
+        {{ "%.1f"|format(stats.label_counts.get('Netral',0) / stats.total * 100) }}%
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart Sentimen (Chart.js) -->
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>Proporsi Sentimen</h3>
+      <canvas id="pieChart" width="320" height="320"></canvas>
+    </div>
+    <div class="chart-box chart-box-wide">
+      <h3>Distribusi Sentimen per Kategori</h3>
+      <canvas id="barChart" height="280"></canvas>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="alert alert-warn">
+    ⚠️ File <code>data_raw_komentar.csv</code> tidak ditemukan.
+    Pastikan file ada di root folder proyek.
+  </div>
+  {% endif %}
+</section>
+
+<!-- ══════════════ VISUALISASI GAMBAR ══════════════ -->
+<section id="visualisasi" class="section section-dark">
+  <div class="section-header">
+    <h2>🖼️ Visualisasi Analisis</h2>
+    <p>Eksplorasi data mendalam: distribusi waktu, kata dominan, dan performa model</p>
+  </div>
+
+  <!-- Tab Navigasi -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="tab-distribusi">Distribusi Sentimen</button>
+    <button class="tab-btn" data-tab="tab-timeseries">Tren Waktu</button>
+    <button class="tab-btn" data-tab="tab-wordcloud">Word Cloud</button>
+    <button class="tab-btn" data-tab="tab-topwords">Top Kata</button>
+    <button class="tab-btn" data-tab="tab-model">Performa Model</button>
+  </div>
+
+  <div id="tab-distribusi" class="tab-content active">
+    <div class="viz-card">
+      <h3>Distribusi Sentimen Komentar Publik</h3>
+      <p class="viz-desc">Mayoritas komentar (85.3%) mengekspresikan sentimen <strong>negatif</strong> terhadap isu akses udara militer AS.</p>
+      <img src="{{ url_for('static', filename='images/viz1_distribusi_sentimen.png') }}"
+           alt="Distribusi Sentimen" class="viz-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+      <div class="img-placeholder" style="display:none">📊 Gambar tidak ditemukan — letakkan <code>viz1_distribusi_sentimen.png</code> di <code>static/images/</code></div>
+    </div>
+  </div>
+
+  <div id="tab-timeseries" class="tab-content">
+    <div class="viz-card">
+      <h3>Time Series Aktivitas Komentar</h3>
+      <p class="viz-desc">Tren komentar harian menunjukkan lonjakan signifikan, mencerminkan viralitas isu di media sosial.</p>
+      <img src="{{ url_for('static', filename='images/viz2_time_series.png') }}"
+           alt="Time Series" class="viz-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+      <div class="img-placeholder" style="display:none">📊 Gambar tidak ditemukan — letakkan <code>viz2_time_series.png</code> di <code>static/images/</code></div>
+    </div>
+  </div>
+
+  <div id="tab-wordcloud" class="tab-content">
+    <div class="viz-card">
+      <h3>WordCloud Kata Dominan per Sentimen</h3>
+      <p class="viz-desc">Kata seperti <em>"antek"</em>, <em>"jajah"</em>, <em>"daulat"</em> mendominasi sentimen negatif. Sentimen positif menggunakan kata <em>"moga"</em>, <em>"mantap"</em>, <em>"aman"</em>.</p>
+      <img src="{{ url_for('static', filename='images/viz3_wordcloud.png') }}"
+           alt="WordCloud" class="viz-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+      <div class="img-placeholder" style="display:none">📊 Gambar tidak ditemukan — letakkan <code>viz3_wordcloud.png</code> di <code>static/images/</code></div>
+    </div>
+  </div>
+
+  <div id="tab-topwords" class="tab-content">
+    <div class="viz-card">
+      <h3>Top-20 Kata Dominan per Sentimen</h3>
+      <p class="viz-desc">Frekuensi kata tertinggi pada masing-masing kelas sentimen. "Indonesia" dan "negara" menjadi kata paling sering muncul di sentimen negatif.</p>
+      <img src="{{ url_for('static', filename='images/viz4_top_words.png') }}"
+           alt="Top Words" class="viz-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+      <div class="img-placeholder" style="display:none">📊 Gambar tidak ditemukan — letakkan <code>viz4_top_words.png</code> di <code>static/images/</code></div>
+    </div>
+  </div>
+
+
+  <div id="tab-model" class="tab-content">
+    <div class="viz-row">
+      <div class="viz-card viz-card-half">
+        <h3>Confusion Matrix — Model LSTM</h3>
+        <p class="viz-desc">Model sangat baik mengenali sentimen Negatif (75%), namun masih kesulitan membedakan Netral dan Positif akibat ketidakseimbangan data.</p>
+        <img src="{{ url_for('static', filename='images/confusion_matrix.png') }}"
+             alt="Confusion Matrix" class="viz-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+        <div class="img-placeholder" style="display:none">📊 <code>confusion_matrix.png</code> tidak ditemukan</div>
+      </div>
+      <div class="viz-card viz-card-half">
+        <h3>Learning Curves — Training vs Validasi</h3>
+        <p class="viz-desc">Training accuracy mencapai ~83%, namun val. accuracy ~68%. Terdapat indikasi overfitting yang perlu ditangani dengan regularisasi lebih kuat.</p>
+        <img src="{{ url_for('static', filename='images/learning_curves.png') }}"
+             alt="Learning Curves" class="viz-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+        <div class="img-placeholder" style="display:none">📊 <code>learning_curves.png</code> tidak ditemukan</div>
+      </div>
+    </div>
+    <!-- Model Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-val">~83%</div>
+        <div class="metric-label">Train Accuracy</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">~68%</div>
+        <div class="metric-label">Val. Accuracy</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">75%</div>
+        <div class="metric-label">Recall Negatif</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">39%</div>
+        <div class="metric-label">Recall Positif</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PREDIKSI REAL-TIME ══════════════ -->
+<section id="prediksi" class="section">
+  <div class="section-header">
+    <h2>🔍 Prediksi Sentimen Real-time</h2>
+    <p>Masukkan komentar untuk diprediksi sentimen-nya menggunakan model LSTM</p>
+  </div>
+
+  {% if not model_ready %}
+  <div class="alert alert-warn" style="margin-bottom:1.5rem;">
+    ⚠️ <strong>Model belum tersedia.</strong> Letakkan <code>lstm_model.h5</code> dan <code>tokenizer.json</code>
+    ke dalam folder <code>model/</code> agar fitur prediksi aktif.
+  </div>
+  {% endif %}
+
+  <div class="predict-container">
+    <div class="predict-form">
+      <!-- Contoh Komentar -->
+      <div class="example-chips">
+        <span class="chip-label">Contoh cepat:</span>
+        <button class="chip chip-neg" onclick="fillExample('Ini jelas pengkhianatan! Kita tidak boleh membiarkan militer asing masuk ke wilayah udara kita.')">Negatif</button>
+        <button class="chip chip-pos" onclick="fillExample('Kerjasama pertahanan dengan AS bisa memperkuat keamanan Indonesia di tengah ketegangan regional.')">Positif</button>
+        <button class="chip chip-neu" onclick="fillExample('Perjanjian ini masih dalam tahap proposal dan belum disetujui oleh DPR.')">Netral</button>
+      </div>
+
+      <textarea id="inputText" class="predict-textarea"
+                placeholder="Ketik atau tempel komentar di sini... (maks. 1000 karakter)"
+                maxlength="1000" rows="5"></textarea>
+      <div class="char-counter"><span id="charCount">0</span>/1000 karakter</div>
+
+      <div class="predict-actions">
+        <button id="predictBtn" class="btn btn-primary btn-lg" onclick="doPredict()">
+          🔍 Analisis Sentimen
+        </button>
+        <button class="btn btn-outline" onclick="clearAll()">🗑️ Bersihkan</button>
+      </div>
+    </div>
+
+    <!-- HASIL PREDIKSI -->
+    <div id="resultBox" class="result-box" style="display:none;">
+      <div id="loadingSpinner" class="spinner" style="display:none;">
+        <div class="spinner-ring"></div>
+        <span>Memproses teks...</span>
+      </div>
+
+      <div id="resultContent" style="display:none;">
+        <div class="result-header">
+          <div id="resultIcon" class="result-icon"></div>
+          <div>
+            <div class="result-label-text">Hasil Prediksi</div>
+            <div id="resultLabel" class="result-label"></div>
+          </div>
+          <div class="result-conf-wrap">
+            <div class="result-conf-label">Keyakinan</div>
+            <div id="resultConf" class="result-conf"></div>
+          </div>
+        </div>
+
+        <!-- Bar probabilitas tiap kelas -->
+        <div class="prob-section">
+          <div class="prob-label">Distribusi Probabilitas</div>
+          <div class="prob-row">
+            <span class="prob-name neg">😡 Negatif</span>
+            <div class="prob-bar-wrap">
+              <div id="barNeg" class="prob-bar prob-bar-neg"></div>
+            </div>
+            <span id="pctNeg" class="prob-pct">0%</span>
+          </div>
+          <div class="prob-row">
+            <span class="prob-name pos">😊 Positif</span>
+            <div class="prob-bar-wrap">
+              <div id="barPos" class="prob-bar prob-bar-pos"></div>
+            </div>
+            <span id="pctPos" class="prob-pct">0%</span>
+          </div>
+          <div class="prob-row">
+            <span class="prob-name neu">😐 Netral</span>
+            <div class="prob-bar-wrap">
+              <div id="barNeu" class="prob-bar prob-bar-neu"></div>
+            </div>
+            <span id="pctNeu" class="prob-pct">0%</span>
+          </div>
+        </div>
+
+        <!-- Teks setelah preprocessing -->
+        <div class="cleaned-section">
+          <div class="cleaned-label">📝 Teks setelah Preprocessing</div>
+          <div id="cleanedText" class="cleaned-text"></div>
+        </div>
+
+        <div class="result-note">
+          ⚠️ Prediksi dihasilkan oleh model machine learning dan tidak selalu 100% akurat.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Penjelasan Alur Preprocessing -->
+  <div class="pipeline-card">
+    <h3>⚙️ Alur Preprocessing Teks</h3>
+    <div class="pipeline-steps">
+      <div class="pipe-step">
+        <div class="pipe-num">1</div>
+        <div class="pipe-info">
+          <strong>Case Folding</strong>
+          <span>Mengubah semua teks ke huruf kecil</span>
+        </div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-num">2</div>
+        <div class="pipe-info">
+          <strong>Cleaning</strong>
+          <span>Hapus URL, mention, simbol</span>
+        </div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-num">3</div>
+        <div class="pipe-info">
+          <strong>Stopword</strong>
+          <span>Buang kata tidak bermakna</span>
+        </div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-num">4</div>
+        <div class="pipe-info">
+          <strong>Stemming</strong>
+          <span>Kata ke bentuk dasar (Sastrawi)</span>
+        </div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-num">5</div>
+        <div class="pipe-info">
+          <strong>LSTM Predict</strong>
+          <span>Tokenisasi → Padding → Model</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Data dari Flask untuk Chart.js ──────────────────────────
+{% if stats %}
+const labelCounts = {
+  Negatif : {{ stats.label_counts.get('Negatif', 0) }},
+  Positif : {{ stats.label_counts.get('Positif', 0) }},
+  Netral  : {{ stats.label_counts.get('Netral',  0) }},
+};
+{% else %}
+const labelCounts = { Negatif: 0, Positif: 0, Netral: 0 };
+{% endif %}
+
+// ── Pie Chart ────────────────────────────────────────────────
+const pieCtx = document.getElementById('pieChart');
+if (pieCtx) {
+  new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Negatif', 'Positif', 'Netral'],
+      datasets: [{
+        data: [labelCounts.Negatif, labelCounts.Positif, labelCounts.Netral],
+        backgroundColor: ['#c0392b','#27ae60','#2980b9'],
+        borderColor: '#fff',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#333', font: { size: 13 } } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+              const pct   = ((ctx.raw / total) * 100).toFixed(1);
+              return ` ${ctx.label}: ${ctx.raw.toLocaleString('id-ID')} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Bar Chart ─────────────────────────────────────────────────
+const barCtx = document.getElementById('barChart');
+if (barCtx) {
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Negatif', 'Positif', 'Netral'],
+      datasets: [{
+        label: 'Jumlah Komentar',
+        data: [labelCounts.Negatif, labelCounts.Positif, labelCounts.Netral],
+        backgroundColor: ['rgba(192,57,43,0.85)','rgba(39,174,96,0.85)','rgba(41,128,185,0.85)'],
+        borderColor:     ['#c0392b','#27ae60','#2980b9'],
+        borderWidth: 2,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.06)' },
+          ticks: {
+            callback: v => v.toLocaleString('id-ID'),
+            color: '#555'
+          }
+        },
+        x: { ticks: { color: '#555' } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.raw.toLocaleString('id-ID')} komentar`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Tab Logic ────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Char Counter ─────────────────────────────────────────────
+const inputText = document.getElementById('inputText');
+const charCount = document.getElementById('charCount');
+inputText.addEventListener('input', () => {
+  charCount.textContent = inputText.value.length;
+});
+
+// ── Fill Example ─────────────────────────────────────────────
+function fillExample(text) {
+  inputText.value = text;
+  charCount.textContent = text.length;
+  inputText.focus();
+}
+
+// ── Clear ─────────────────────────────────────────────────────
+function clearAll() {
+  inputText.value = '';
+  charCount.textContent = '0';
+  document.getElementById('resultBox').style.display = 'none';
+}
+
+// ── Predict ───────────────────────────────────────────────────
+async function doPredict() {
+  const text = inputText.value.trim();
+  if (!text) { alert('Masukkan teks terlebih dahulu!'); return; }
+
+  const resultBox     = document.getElementById('resultBox');
+  const spinner       = document.getElementById('loadingSpinner');
+  const resultContent = document.getElementById('resultContent');
+
+  resultBox.style.display = 'block';
+  spinner.style.display   = 'flex';
+  resultContent.style.display = 'none';
+  document.getElementById('predictBtn').disabled = true;
+
+  try {
+    const resp = await fetch('/predict', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ text }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      alert(data.error || 'Terjadi kesalahan.');
+      resultBox.style.display = 'none';
+      return;
+    }
+
+    // Render hasil
+    const labelEl = document.getElementById('resultLabel');
+    const iconEl  = document.getElementById('resultIcon');
+    const confEl  = document.getElementById('resultConf');
+
+    const icons  = { Negatif:'😡', Positif:'😊', Netral:'😐' };
+    const colors = { Negatif:'result-neg', Positif:'result-pos', Netral:'result-neu' };
+
+    iconEl.textContent  = icons[data.label]  || '🤔';
+    labelEl.textContent = data.label;
+    labelEl.className   = 'result-label ' + (colors[data.label] || '');
+    confEl.textContent  = data.confidence.toFixed(1) + '%';
+
+    // Bars
+    const d = data.detail;
+    const setBar = (id, barId, pct) => {
+      document.getElementById(id).textContent = pct.toFixed(1) + '%';
+      document.getElementById(barId).style.width = Math.min(pct, 100) + '%';
+    };
+    setBar('pctNeg','barNeg', d.Negatif);
+    setBar('pctPos','barPos', d.Positif);
+    setBar('pctNeu','barNeu', d.Netral);
+
+    document.getElementById('cleanedText').textContent =
+      data.cleaned_text || '(teks kosong setelah preprocessing)';
+
+    spinner.style.display        = 'none';
+    resultContent.style.display  = 'block';
+
+  } catch (err) {
+    alert('Gagal menghubungi server: ' + err.message);
+    resultBox.style.display = 'none';
+  } finally {
+    document.getElementById('predictBtn').disabled = false;
+  }
+}
+</script>
+{% endblock %}
