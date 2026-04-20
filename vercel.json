@@ -4,9 +4,8 @@
     {
       "src": "app.py",
       "use": "@vercel/python",
-      "config": { 
-        "runtime": "python3.11",
-        "maxLambdaSize": "500mb" 
+      "config": {
+        "maxLambdaSize": "500mb"
       }
     }
   ],
